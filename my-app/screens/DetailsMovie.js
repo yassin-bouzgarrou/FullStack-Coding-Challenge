@@ -1,46 +1,33 @@
-import React from 'react';
-import { View, Text, Image, Dimensions, TouchableOpacity, ScrollView, Platform, StyleSheet } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, Text, Image, Dimensions, TouchableOpacity, ScrollView, Platform, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HeartIcon } from 'react-native-heroicons/solid';
+import { FavouriteContext } from '../Global/FavouriteContext';
 import { ArrowLeftIcon, ChevronLeftIcon } from 'react-native-heroicons/outline';
 import axios from 'axios';
-import { useState } from 'react';
+import Modal from 'react-native-modal';
 
 const ios = Platform.OS === 'ios';
 const { width, height } = Dimensions.get('window');
 
 export default function DetailsMovie() {
-    const [isFavourite, toggleFavourite] = useState(false);
-    const { params: item } = useRoute();
-    console.log(item);
+    const [showNotification, setShowNotification] = useState(false);
+    const { favorites, toggleFavourite } = useContext(FavouriteContext);
+    const { params } = useRoute();
+    const item = params.item || params;
 
     const navigation = useNavigation();
 
     const handleLike = () => {
-        const data = {
-            media_type: 'movie',
-            media_id: item.id,
-            favorite: !isFavourite,
-        };
-        const url = 'https://api.themoviedb.org/3/account/20111946/favorite'
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwN2MxYjg2Zjk2NzBiNjhmZjMzNTY5YzlmODYzYzZiMiIsInN1YiI6IjY0YTU5OTQzZGExMGYwMDBmZmZlYTAyOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Xh6wfTJ2yxzvyoi8hmD4d1EQzYygjy4B1kkW5-mQN4E',
-            },
-            data: JSON.stringify(data),
-        };
+        toggleFavourite(item);
+        setShowNotification(true);
+    };
 
-        axios(url, options)
-            .then((response) => {
-                console.log(response.data);
-                toggleFavourite(!isFavourite);
-            })
-            .catch((error) => {
-                console.error('error:', error);
-            });
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
     };
 
     return (
@@ -52,7 +39,7 @@ export default function DetailsMovie() {
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={handleLike}>
-                        <HeartIcon size="35" color={isFavourite ? '#eab308' : 'white'} />
+                        <HeartIcon size="35" color={favorites.some((fav) => fav.id === item.id) ? 'red' : 'white'} />
                     </TouchableOpacity>
                 </SafeAreaView>
 
@@ -66,7 +53,7 @@ export default function DetailsMovie() {
 
                 {item?.id ? (
                     <Text style={styles.detailsText}>
-                        {item?.original_language} • {item?.release_date?.split('-')[0] || 'N/A'} • 45 min . Rating: {item.vote_average}
+                        {item?.original_language} - {formatDate(item?.release_date)} - 45 min Rating: {item.vote_average}
                     </Text>
                 ) : null}
 
@@ -82,9 +69,25 @@ export default function DetailsMovie() {
 
                 <Text style={styles.overview}>{item?.overview}</Text>
             </View>
+
+            <Modal
+                isVisible={showNotification}
+                onBackdropPress={() => setShowNotification(false)}
+                backdropOpacity={0.5}
+                animationIn="fadeIn"
+                animationOut="fadeOut"
+                style={styles.modal}
+            >
+                <View style={styles.notificationContainer}>
+                    <Text style={styles.notificationText}>
+                        {favorites.some((fav) => fav.id === item.id) ? 'Movie added to favorites!' : 'Movie removed from favorites!'}
+                    </Text>
+                </View>
+            </Modal>
         </ScrollView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         paddingBottom: 20,
@@ -102,12 +105,10 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 16,
-
     },
     backButton: {
         borderRadius: 30,
         padding: 10,
-
         backgroundColor: '#1F2937',
     },
     image: {
@@ -135,10 +136,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 20,
         color: 'white',
-        backgroundColor: "grey",
+        backgroundColor: 'grey',
         padding: 2,
         opacity: 0.8,
-
     },
     genresWrapper: {
         flexDirection: 'row',
@@ -157,5 +157,25 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: 24,
         marginBottom: 10,
+    },
+    modal: {
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        margin: 0,
+    },
+    notificationContainer: {
+        backgroundColor: 'white',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+        marginTop: 20,
+
+    },
+    notificationText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: 20,
+
     },
 });

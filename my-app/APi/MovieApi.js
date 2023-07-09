@@ -2,7 +2,7 @@ import axios from "axios";
 
 const myApi = "07c1b86f9670b68ff33569c9f863c6b2"
 const ApiUrl = 'https://api.themoviedb.org/3';
-const TopMovieUrl = `${ApiUrl}/movie/popular?api_key=${myApi}`
+const TopMovieUrl = `${ApiUrl}/movie/top_rated?api_key=${myApi}`
 const FavMovie = `${ApiUrl}/account/20111946/favorite/movies`
 
 

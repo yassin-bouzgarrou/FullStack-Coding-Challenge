@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, TouchableWithoutFeedback, Dimensions, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
 export default function ToMovie({ data, search }) {
+  
     const navigation = useNavigation();
 
     const handleClick = (item) => {
@@ -21,7 +22,8 @@ export default function ToMovie({ data, search }) {
         if (search && !item.title.toLowerCase().includes(search.toLowerCase())) {
             return null;
         }
-        console.log(item);
+
+        const voteAverage = item.vote_average.toFixed(1)
 
         return (
             <View style={{ flexDirection: 'row', marginBottom: 0, marginLeft: -5 }}>
@@ -35,7 +37,10 @@ export default function ToMovie({ data, search }) {
                                 borderRadius: 8,
                             }}
                         />
-                        <Text style={{ color: 'white', textAlign: 'center', marginTop: 8, minWidth: 100, fontWeight: "bold", fontSize: 16, marginBottom: 50 }}>{item.title}</Text>
+                        <View style={{ backgroundColor: '#f44336', borderRadius: 50, padding: 8, position: 'absolute', right: 15, top: 15 }}>
+                            <Text style={{ color: 'white', fontSize: 20 }}>{voteAverage}</Text>
+                        </View>
+                        <Text style={{ color: 'white', textAlign: 'center', marginTop: 8, minWidth: 100, fontWeight: "bold", fontSize: 20, marginBottom: 50 }}>{item.title}</Text>
                     </View>
                 </TouchableWithoutFeedback>
 
@@ -50,6 +55,9 @@ export default function ToMovie({ data, search }) {
                                     borderRadius: 8,
                                 }}
                             />
+                            <View style={{ backgroundColor: '#f44336', borderRadius: 50, padding: 8, position: 'absolute', right: 15, top: 15 }}>
+                                <Text style={{ color: 'white', fontSize: 16 }}>{nextItem.vote_average.toFixed(1)}</Text>
+                            </View>
                             <Text style={{ color: 'white', textAlign: 'center', marginTop: 8, minWidth: 100, fontWeight: "bold", fontSize: 16 }}>{nextItem.title}</Text>
                         </View>
                     </TouchableWithoutFeedback>
@@ -67,8 +75,6 @@ export default function ToMovie({ data, search }) {
                 keyExtractor={(item) => item.id.toString()}
                 horizontal={false}
             />
-
-
         </View>
     );
 }

@@ -27,7 +27,7 @@ export default function HomeScreen() {
 
         if (data && data.results) setTopMovie(data.results);
     };
-    console.log(search);
+
 
     const navigateToFavorites = () => {
         navigation.navigate('Fav');

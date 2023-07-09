@@ -1,50 +1,48 @@
-import { View, Text, SafeAreaView, StyleSheet, ScrollView } from "react-native";
-import React, { useEffect, useState } from "react";
-import { Button, Card } from "react-native-paper";
-import { GetFavMovie } from "../APi/MovieApi";
+import React, { useContext } from "react";
+import { View, Text, SafeAreaView, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { FavouriteContext } from "../Global/FavouriteContext";
+import { Card } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 
 export default function FavScreen() {
-  const [favorites, setFavorites] = useState([]);
+  const { favorites } = useContext(FavouriteContext);
 
-  useEffect(() => {
-    fetchFavorites();
-  }, []);
 
-  const fetchFavorites = async () => {
-    try {
-      const data = await GetFavMovie();
-      if (data && data.results) setFavorites(data.results);
-    } catch (error) {
-      console.log(error);
-    }
+
+  const navigation = useNavigation();
+
+  const navigateToMovieDetails = (item) => {
+    navigation.navigate("Movie", { item });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.heading}>Favorite movie</Text>
+        <Text style={styles.heading}>Favorite Movies</Text>
         {favorites.length === 0 ? (
-          <Text style={styles.noLikesText}>
-            You don't have any likes yet &#x1F60A;
-          </Text>
+          <Text style={styles.noLikesText}>You don't have any favorites yet &#x1F60A;</Text>
         ) : (
           favorites.map((e, i) => (
-            <View key={i} style={styles.cardContainer}>
-              <Card style={[styles.card, { background: "transparent" }]}>
+            <TouchableOpacity
+              key={i}
+              style={styles.cardContainer}
+              onPress={() => navigateToMovieDetails(e)}
+            >
+              <Card style={[styles.card, { backgroundColor: "transparent" }]}>
                 <Card.Cover
                   style={styles.coverImage}
-                  source={{ uri: 'https://image.tmdb.org/t/p/w500/' + e.poster_path }}
+                  source={{ uri: `https://image.tmdb.org/t/p/w500/${e.poster_path}` }}
                 />
                 <View style={styles.cardContent}>
                   <Text style={styles.title}>{e.title}</Text>
                   <Text style={styles.description}>{e.description}</Text>
                 </View>
               </Card>
-            </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>
-    </SafeAreaView >
+    </SafeAreaView>
   );
 }
 
@@ -78,13 +76,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "black",
     elevation: 2,
-
-
   },
   cardContent: {
     flex: 1,
     padding: 10,
-    marginLeft: 60
+    marginLeft: 60,
   },
   title: {
     fontSize: 18,
@@ -99,6 +95,6 @@ const styles = StyleSheet.create({
     width: 250,
     height: 300,
     borderRadius: 10,
-    marginLeft: 60
+    marginLeft: 60,
   },
 });
